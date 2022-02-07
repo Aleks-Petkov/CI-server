@@ -13,8 +13,7 @@ class CiServerApplicationTests {
     }
 
     @Test
-    void failTest() {
-        boolean hello = true;
-        assertTrue(hello);
+    void succeedingTest() {
+        assertTrue(true);
     }
 }
