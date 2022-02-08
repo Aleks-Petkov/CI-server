@@ -18,17 +18,18 @@ public class CiController {
     }
 
     @PostMapping("/ci")
-    public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) {
+    public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) throws IOException {
         System.out.println("Received post request!");
         request.printRequest();
         pullAndBuildApplication(request);
         return "Ok!";
     }
 
-    private void pullAndBuildApplication(GithubWebhookRequest request) {
+    private void pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHead_commit().getId()));
         Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
+        executeAndPrintCommand("git checkout main");
         System.out.println("Tests successful: " + testsSuccessful); // this should instead be printed to file for consistent storage
     }
 
@@ -38,20 +39,17 @@ public class CiController {
      * @return True if the second word in the second to last line of the standard output 
      * is "SUCCESSFUL" (indicating a successful test run), else false.
      */
-    private Boolean executeAndPrintCommand(String cmd) {
+    private Boolean executeAndPrintCommand(String cmd) throws IOException {
         ArrayList<String> lines = new ArrayList<>();
-        try {
-            Runtime run = Runtime.getRuntime();
-            Process process = run.exec(cmd);
-            BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = buf.readLine()) != null) {
-                System.out.println(line);
-                lines.add(line);
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+        Runtime run = Runtime.getRuntime();
+        Process process = run.exec(cmd);
+        BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = buf.readLine()) != null) {
+            System.out.println(line);
+            lines.add(line);
         }
+    
         if (lines.size() < 2 || lines.get(lines.size()-2).split(" ").length < 2) 
             return false;
         return lines.get(lines.size()-2).split(" ")[1].equals("SUCCESSFUL");
