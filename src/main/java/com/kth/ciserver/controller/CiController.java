@@ -25,18 +25,21 @@ public class CiController {
     }
 
     private void pullAndBuildApplication(GithubWebhookRequest request) {
+        executeAndPrintCommand("git branch");
+        executeAndPrintCommand("git checkout main");
+        executeAndPrintCommand("git branch");
+    }
+
+    private void executeAndPrintCommand(String cmd) {
         try {
-            String cmd = "git status";
             Runtime run = Runtime.getRuntime();
             Process process = run.exec(cmd);
-            process.waitFor();
             BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = buf.readLine()) != null) {
                 System.out.println(line);
             }
-
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
