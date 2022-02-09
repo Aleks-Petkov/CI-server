@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "github.username",
+      "type": "java.lang.String",
+      "description": "Description for github.username."
+  }
+] }

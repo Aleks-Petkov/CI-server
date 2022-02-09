@@ -1,27 +1,43 @@
 package com.kth.ciserver.controller;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class GithubWebhookRequest {
     RepositoryObject repository;
 
-    HeadCommit head_commit;
+    HeadCommit headCommit;
 
+    @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
     public class RepositoryObject {
-        String html_url;
+        String htmlUrl;
+        String statusesUrl;
 
-        public String getHtml_url() {
-            return html_url;
+        public String getHtmlUrl() {
+            return htmlUrl;
         }
 
-        public void setHtml_url(String html_url) {
-            this.html_url = html_url;
+        public void setHtmlUrl(String html_url) {
+            this.htmlUrl = html_url;
+        }
+
+        public String getStatusesUrl() {
+            return statusesUrl;
+        }
+
+        public void setStatusesUrl(String statuses_url) {
+            this.statusesUrl = statuses_url;
         }
     }
 
+    @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
     public class HeadCommit {
         String id;
         String timestamp;
         Committer committer;
 
+        @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
         public class Committer {
             String name;
             String email;
@@ -68,12 +84,12 @@ public class GithubWebhookRequest {
         }
     }
 
-    public HeadCommit getHead_commit() {
-        return head_commit;
+    public HeadCommit getHeadCommit() {
+        return headCommit;
     }
 
-    public void setHead_commit(HeadCommit head_commit) {
-        this.head_commit = head_commit;
+    public void setHeadCommit(HeadCommit head_commit) {
+        this.headCommit = head_commit;
     }
 
     public RepositoryObject getRepository() {
@@ -85,10 +101,11 @@ public class GithubWebhookRequest {
     }
 
     public void printRequest() {
-        System.out.println("URL: " + this.getRepository().getHtml_url());
-        System.out.println("Commit id: " + this.getHead_commit().getId());
-        System.out.println("Timestamp: " + this.getHead_commit().getTimestamp());
-        System.out.println("Author name: " + this.getHead_commit().getCommitter().getName());
-        System.out.println("Author email: " + this.getHead_commit().getCommitter().getEmail());
+        System.out.println("URL: " + this.getRepository().getHtmlUrl());
+        System.out.println("Commit id: " + this.getHeadCommit().getId());
+        System.out.println("Timestamp: " + this.getHeadCommit().getTimestamp());
+        System.out.println("Author name: " + this.getHeadCommit().getCommitter().getName());
+        System.out.println("Author email: " + this.getHeadCommit().getCommitter().getEmail());
+        System.out.println("Statuses URL: " + this.getRepository().getStatusesUrl());
     }
 }
