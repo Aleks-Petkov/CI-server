@@ -42,18 +42,18 @@ public class CiController {
         System.out.println("Received post request!");
         System.out.println(request.toString());
         boolean buildSuccessful = pullAndBuildApplication(request);
+        writeToFile(buildSuccessful, request.toString());
         updateGithubCommitStatus(buildSuccessful,
                 request.getHeadCommit().getId(),
                 request.getRepository().getStatusesUrl());
-
         return "Ok!";
     }
 
     private boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
-        executeAndPrintCommand(String.format("git checkout %s", request.getHead_commit().getId()));
+        executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
         boolean testsSuccessful;
-        try{
+        try {
             testsSuccessful = executeAndPrintCommand("./gradlew clean build");
         }
         catch(IOException e){
@@ -61,7 +61,7 @@ public class CiController {
         }
         executeAndPrintCommand("git checkout main");
         System.out.println("Tests successful: " + testsSuccessful); 
-        writeToFile(testsSuccessful, request.toString());
+        return testsSuccessful;
     }
 
     private void writeToFile(boolean success, String requestString){
@@ -74,18 +74,12 @@ public class CiController {
                 writer.write("TESTS FAILED\n");
             writer.close();
         }
-        catch(IOException e){
+        catch (IOException e) {
             System.out.println(e.getMessage());
-        }
-      
-        executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
-        Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
-        executeAndPrintCommand("git checkout main");
-        System.out.println("Tests successful: " + testsSuccessful); // this should instead be printed to file for consistent storage
-        return testsSuccessful;
+        } 
     }
 
-    private void updateGithubCommitStatus(Boolean testsSuccessful, String commitId, String statusesUrl) {
+    private void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
         String commitState;
 
         if (testsSuccessful)
@@ -124,7 +118,7 @@ public class CiController {
      * @return True if the second word in the second to last line of the standard output 
      * is "SUCCESSFUL" (indicating a successful test run), else false.
      */
-    private Boolean executeAndPrintCommand(String cmd) throws IOException {
+    private boolean executeAndPrintCommand(String cmd) throws IOException {
         ArrayList<String> lines = new ArrayList<>();
         Runtime run = Runtime.getRuntime();
         Process process = run.exec(cmd);

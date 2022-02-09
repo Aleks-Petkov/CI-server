@@ -102,11 +102,11 @@ public class GithubWebhookRequest {
   
     public String toString() {
         StringBuilder builder= new StringBuilder();
-        builder.append("\nURL: " + this.getRepository().getHtml_url());
-        builder.append("\nCommit id: " + this.getHead_commit().getId());
-        builder.append("\nTimestamp: " + this.getHead_commit().getTimestamp());
-        builder.append("\nAuthor name: " + this.getHead_commit().getCommitter().getName());
-        builder.append("\nAuthor email: " + this.getHead_commit().getCommitter().getEmail()+"\n");
+        builder.append("\nURL: " + this.getRepository().getHtmlUrl());
+        builder.append("\nCommit id: " + this.getHeadCommit().getId());
+        builder.append("\nTimestamp: " + this.getHeadCommit().getTimestamp());
+        builder.append("\nAuthor name: " + this.getHeadCommit().getCommitter().getName());
+        builder.append("\nAuthor email: " + this.getHeadCommit().getCommitter().getEmail()+"\n");
         return builder.toString();
 
     }
