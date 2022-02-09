@@ -19,6 +19,7 @@ public class CiController {
 
     public static final String COMMIT_STATE_SUCCESS = "success";
     public static final String COMMIT_STATE_FAILURE = "failure";
+
     @Value("${github.username}")
     private String GITHUB_USERNAME;
 
@@ -40,18 +41,23 @@ public class CiController {
     public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) throws IOException {
         System.out.println("Received post request!");
         request.printRequest();
-        pullAndBuildApplication(request);
+
+        boolean buildSuccessful = pullAndBuildApplication(request);
+
+        updateGithubCommitStatus(buildSuccessful,
+                request.getHeadCommit().getId(),
+                request.getRepository().getStatusesUrl());
+
         return "Ok!";
     }
 
-    private void pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
+    private boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
         Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
         executeAndPrintCommand("git checkout main");
         System.out.println("Tests successful: " + testsSuccessful); // this should instead be printed to file for consistent storage
-
-        updateGithubCommitStatus(testsSuccessful, request.getHeadCommit().getId(), request.getRepository().getStatusesUrl());
+        return testsSuccessful;
     }
 
     private void updateGithubCommitStatus(Boolean testsSuccessful, String commitId, String statusesUrl) {
