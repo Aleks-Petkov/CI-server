@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 public class CiController {
-
+  
     public static final String COMMIT_STATE_SUCCESS = "success";
     public static final String COMMIT_STATE_FAILURE = "failure";
 
@@ -40,10 +40,8 @@ public class CiController {
     @PostMapping("/ci")
     public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) throws IOException {
         System.out.println("Received post request!");
-        request.printRequest();
-
+        System.out.println(request.toString());
         boolean buildSuccessful = pullAndBuildApplication(request);
-
         updateGithubCommitStatus(buildSuccessful,
                 request.getHeadCommit().getId(),
                 request.getRepository().getStatusesUrl());
@@ -53,6 +51,33 @@ public class CiController {
 
     private boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
+        executeAndPrintCommand(String.format("git checkout %s", request.getHead_commit().getId()));
+        boolean testsSuccessful;
+        try{
+            testsSuccessful = executeAndPrintCommand("./gradlew clean build");
+        }
+        catch(IOException e){
+            testsSuccessful = executeAndPrintCommand("gradlew.bat clean build");
+        }
+        executeAndPrintCommand("git checkout main");
+        System.out.println("Tests successful: " + testsSuccessful); 
+        writeToFile(testsSuccessful, request.toString());
+    }
+
+    private void writeToFile(boolean success, String requestString){
+        try {
+            FileWriter writer = new FileWriter("BuildHistory.txt", true);
+            writer.write(requestString);
+            if (success)
+                writer.write("TESTS SUCCESSFUL\n");
+            else
+                writer.write("TESTS FAILED\n");
+            writer.close();
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+      
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
         Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
         executeAndPrintCommand("git checkout main");
