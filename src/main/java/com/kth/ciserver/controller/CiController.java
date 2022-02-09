@@ -9,8 +9,6 @@ import java.util.ArrayList;
 
 @RestController
 public class CiController {
-    //File buildHistory;
-
 
     @GetMapping()
     public String handleHomepage() {
@@ -20,7 +18,7 @@ public class CiController {
     @PostMapping("/ci")
     public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) throws IOException {
         System.out.println("Received post request!");
-        request.printRequest();
+        System.out.println(request.toString());
         pullAndBuildApplication(request);
         return "Ok!";
     }
@@ -28,12 +26,33 @@ public class CiController {
     private void pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHead_commit().getId()));
-        Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
+        Boolean testsSuccessful;
+        try{
+            testsSuccessful = executeAndPrintCommand("./gradlew clean build");
+        }
+        catch(IOException e){
+            testsSuccessful = executeAndPrintCommand("gradlew.bat clean build");
+        }
         executeAndPrintCommand("git checkout main");
-        System.out.println("Tests successful: " + testsSuccessful); // this should instead be printed to file for consistent storage
+        System.out.println("Tests successful: " + testsSuccessful); 
+        writeToFile(testsSuccessful, request);
     }
 
-    
+    private void writeToFile(Boolean success, GithubWebhookRequest request){
+        try {
+            FileWriter writer = new FileWriter("BuildHistory.txt", true);
+            writer.write(request.toString());
+            if (success)
+                writer.write("TESTS SUCCESSFUL\n");
+            else
+                writer.write("TESTS FAILED\n");
+            writer.close();
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
     /** 
      * @param cmd Command to be executed and printed
      * @return True if the second word in the second to last line of the standard output 

@@ -84,11 +84,13 @@ public class GithubWebhookRequest {
         this.repository = repository;
     }
 
-    public void printRequest() {
-        System.out.println("URL: " + this.getRepository().getHtml_url());
-        System.out.println("Commit id: " + this.getHead_commit().getId());
-        System.out.println("Timestamp: " + this.getHead_commit().getTimestamp());
-        System.out.println("Author name: " + this.getHead_commit().getCommitter().getName());
-        System.out.println("Author email: " + this.getHead_commit().getCommitter().getEmail());
+    public String toString() {
+        StringBuilder builder= new StringBuilder();
+        builder.append("\nURL: " + this.getRepository().getHtml_url());
+        builder.append("\nCommit id: " + this.getHead_commit().getId());
+        builder.append("\nTimestamp: " + this.getHead_commit().getTimestamp());
+        builder.append("\nAuthor name: " + this.getHead_commit().getCommitter().getName());
+        builder.append("\nAuthor email: " + this.getHead_commit().getCommitter().getEmail()+"\n");
+        return builder.toString();
     }
 }
