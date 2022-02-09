@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,7 +53,7 @@ public class CiController {
         return "Ok!";
     }
 
-    private boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
+    boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
         Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
@@ -60,7 +62,7 @@ public class CiController {
         return testsSuccessful;
     }
 
-    private void updateGithubCommitStatus(Boolean testsSuccessful, String commitId, String statusesUrl) {
+    void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
         String commitState;
 
         if (testsSuccessful)
