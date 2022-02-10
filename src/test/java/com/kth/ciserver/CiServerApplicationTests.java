@@ -3,7 +3,16 @@ package com.kth.ciserver;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.*;
+
+import com.kth.ciserver.controller.CiController;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 
 @SpringBootTest
 class CiServerApplicationTests {
@@ -16,4 +25,28 @@ class CiServerApplicationTests {
     void succeedingTest() {
         assertTrue(true);
     }
+
+    @Test
+    void writeToFileTestSuccessfull() throws IOException{
+        File testFile = new File("testFile.txt");
+        Path fileName = Path.of("testFile.txt");
+        String testString = "This is a test ";
+        CiController.writeToFile(true, testString, testFile);
+        assertEquals (Files.readString(fileName), testString + "TESTS SUCCESSFUL\n");
+        PrintWriter printWriter = new PrintWriter("testFile.txt");
+        printWriter.close();
+    }
+
+    @Test
+    void writeToFileTest_Fail() throws IOException{
+        File testFile = new File("testFile.txt");
+        Path fileName = Path.of("testFile.txt");
+        String testString = "This is a test ";
+        CiController.writeToFile(false, testString, testFile);
+        assertEquals (Files.readString(fileName), testString + "TESTS FAILED\n");
+        PrintWriter printWriter = new PrintWriter("testFile.txt");
+        printWriter.close();
+    }
+
 }
+
