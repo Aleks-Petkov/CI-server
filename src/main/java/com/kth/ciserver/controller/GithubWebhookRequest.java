@@ -216,13 +216,21 @@ public class GithubWebhookRequest {
      * @return Strings of repository and commit information
      */
     public String toString() {
-        StringBuilder builder= new StringBuilder();
-        builder.append("\nURL: " + this.getRepository().getHtmlUrl());
-        builder.append("\nCommit id: " + this.getHeadCommit().getId());
-        builder.append("\nTimestamp: " + this.getHeadCommit().getTimestamp());
-        builder.append("\nAuthor name: " + this.getHeadCommit().getCommitter().getName());
-        builder.append("\nAuthor email: " + this.getHeadCommit().getCommitter().getEmail()+"\n");
-        return builder.toString();
+        return "\nURL: " + this.getRepository().getHtmlUrl() +
+                "\nCommit id: " + this.getHeadCommit().getId() +
+                "\nTimestamp: " + this.getHeadCommit().getTimestamp() +
+                "\nAuthor name: " + this.getHeadCommit().getCommitter().getName() +
+                "\nAuthor email: " + this.getHeadCommit().getCommitter().getEmail() + "\n";
+    }
 
+    public String toHtml() {
+        return "<p>" +
+                "<h2> New commit </h2>" +
+                "URL: " + this.getRepository().getHtmlUrl() + "<br>" +
+                "Commit id: " + this.getHeadCommit().getId() + "<br>" +
+                "Timestamp: " + this.getHeadCommit().getTimestamp() + "<br>" +
+                "Author name: " + this.getHeadCommit().getCommitter().getName() + "<br>" +
+                "Author email: " + this.getHeadCommit().getCommitter().getEmail() + "<br>" +
+                "</p>";
     }
 }
