@@ -76,7 +76,7 @@ public class CiController {
         System.out.println("Http status for post to Github " + httpStatus);
     }
 
-    private HttpStatus postRequest(String url, String commitState) {
+    HttpStatus postRequest(String url, String commitState) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
