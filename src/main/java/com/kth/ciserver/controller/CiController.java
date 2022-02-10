@@ -16,6 +16,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller for our CI-server
+ *
+ * @author Louis Cameron Booth
+ * @author Aleks Petkov
+ * @author Daniel Tsada Yosief
+ * @author Linnea Hagman
+ * @author Shotaro Ishii
+ * @version 1.0
+ * @since 1.0
+ */
 @RestController
 public class CiController {
   
@@ -33,16 +44,32 @@ public class CiController {
 
     private final RestTemplate restTemplate;
 
+    /**
+     * Class constructor. The RestTemplate offers templates for common scenarios by HTTP method,
+     * in addition to the generalized exchange and execute methods that support of less frequent cases.
+     */
     public CiController() {
         restTemplate = new RestTemplate();
     }
 
+    /**
+     * Shows build history on homepage
+     *
+     * @return Strings of build history
+     */
     @GetMapping()
     public String handleHomepage() throws IOException {
         Path fileName = Path.of(BUILD_HISTORY_FILE_PATH);
         return Files.readString(fileName);
     }
 
+    /**
+     * A function for handling the GithubWebhook
+     *
+     * @param request
+     * @return String, "Ok!" for confirmation
+     * @throws IOException
+     */
     @PostMapping("/ci")
     public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) throws IOException {
         System.out.println("Received post request!");
@@ -55,6 +82,14 @@ public class CiController {
         return "Ok!";
     }
 
+    /**
+     * Runs commands for git pull and gradle build, and for going back to main branch.
+     * Prints out whether the test was successful or not, and returns the boolean value for it.
+     *
+     * @param request
+     * @return True if the Gradle build is successful, otherwise false
+     * @throws IOException
+     */
     boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
@@ -70,6 +105,12 @@ public class CiController {
         return testsSuccessful;
     }
 
+    /**
+     * Writes strings of Github webhook request into a file
+     *
+     * @param success True if the test was successful, otherwise false
+     * @param requestString Strings of GitHub webhook request
+     */
     public void writeToFile(boolean success, String requestString, File file){
         try {
             FileWriter writer = new FileWriter(file, true);
@@ -85,6 +126,13 @@ public class CiController {
         } 
     }
 
+    /**
+     * Updates the commit status for the given ID in GitHub
+     *
+     * @param testsSuccessful True if the test was successful, otherwise false
+     * @param commitId
+     * @param statusesUrl Url for the commit
+     */
     void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
         String commitState;
 
@@ -99,6 +147,13 @@ public class CiController {
         System.out.println("Http status for post to Github " + httpStatus);
     }
 
+    /**
+     * Sends post request for updating commit status
+     *
+     * @param url for the commit
+     * @param commitState
+     * @return The HTTP status code of the response.
+     */
     HttpStatus postRequest(String url, String commitState) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -119,7 +174,9 @@ public class CiController {
         return response.getStatusCode();
     }
 
-    /** 
+    /**
+     * Executes command and prints it out
+     *
      * @param cmd Command to be executed and printed
      * @return True if the second word in the second to last line of the standard output 
      * is "SUCCESSFUL" (indicating a successful test run), else false.
