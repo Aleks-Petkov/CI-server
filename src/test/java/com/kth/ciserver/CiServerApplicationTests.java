@@ -32,7 +32,7 @@ class CiServerApplicationTests {
         Path fileName = Path.of("testFile.txt");
         String testString = "This is a test ";
         CiController.writeToFile(true, testString, testFile);
-        assertEquals (Files.readString(fileName), testString + "TESTS SUCCESSFUL\n");
+        assertTrue (Files.readString(fileName).contains( "TESTS SUCCESSFUL"));
         PrintWriter printWriter = new PrintWriter("testFile.txt");
         printWriter.close();
     }
@@ -43,7 +43,7 @@ class CiServerApplicationTests {
         Path fileName = Path.of("testFile.txt");
         String testString = "This is a test ";
         CiController.writeToFile(false, testString, testFile);
-        assertEquals (Files.readString(fileName), testString + "TESTS FAILED\n");
+        assertTrue (Files.readString(fileName).contains("TESTS FAILED"));
         PrintWriter printWriter = new PrintWriter("testFile.txt");
         printWriter.close();
     }
