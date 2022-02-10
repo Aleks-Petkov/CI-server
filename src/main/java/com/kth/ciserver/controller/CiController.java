@@ -55,7 +55,7 @@ public class CiController {
         return "Ok!";
     }
 
-    private boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
+    boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
         boolean testsSuccessful;
@@ -99,7 +99,7 @@ public class CiController {
         System.out.println("Http status for post to Github " + httpStatus);
     }
 
-    private HttpStatus postRequest(String url, String commitState) {
+    HttpStatus postRequest(String url, String commitState) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -134,7 +134,7 @@ public class CiController {
             System.out.println(line);
             lines.add(line);
         }
-    
+
         if (lines.size() < 2 || lines.get(lines.size()-2).split(" ").length < 2) 
             return false;
         return lines.get(lines.size()-2).split(" ")[1].equals("SUCCESSFUL");
