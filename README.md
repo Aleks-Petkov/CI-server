@@ -1,6 +1,7 @@
 # CI-server
 
 ## Statement of contributions
+
 - Daniel:
     - Helped extract relevant data from the JSON object sent from Github
     - Created the unit tests for almost all our functions
