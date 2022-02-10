@@ -20,6 +20,8 @@ public class CiController {
     public static final String COMMIT_STATE_SUCCESS = "success";
     public static final String COMMIT_STATE_FAILURE = "failure";
 
+    File buildHistory = new File("BuildHistory.txt");
+
     @Value("${github.username}")
     private String GITHUB_USERNAME;
 
@@ -42,7 +44,7 @@ public class CiController {
         System.out.println("Received post request!");
         System.out.println(request.toString());
         boolean buildSuccessful = pullAndBuildApplication(request);
-        writeToFile(buildSuccessful, request.toString());
+        writeToFile(buildSuccessful, request.toString(), buildHistory);
         updateGithubCommitStatus(buildSuccessful,
                 request.getHeadCommit().getId(),
                 request.getRepository().getStatusesUrl());
@@ -64,9 +66,9 @@ public class CiController {
         return testsSuccessful;
     }
 
-    private void writeToFile(boolean success, String requestString){
+    public static void writeToFile(boolean success, String requestString, File file){
         try {
-            FileWriter writer = new FileWriter("BuildHistory.txt", true);
+            FileWriter writer = new FileWriter(file, true);
             writer.write(requestString);
             if (success)
                 writer.write("TESTS SUCCESSFUL\n");
