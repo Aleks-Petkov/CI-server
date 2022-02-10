@@ -17,8 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -86,7 +85,21 @@ class CiServerApplicationTests {
     }
 
     @Test
-    void test_handleGithubWebhookCorrectlyHandlesGetRequest() throws Exception {
+    void handleGithubWebhookCorrectlyHandlesBadPostRequest() throws Exception {
+        // the function expects a POST requests sent to "/ci", containing a json object
+        // that partially reflects the structure of the GithubWebhookRequest class.
+        // But receives an empty Post request and should respond with 400 (Bad request)
+        GithubWebhookRequest request = createTestRequest();
+
+        doReturn(true).when(mockCiC).pullAndBuildApplication(request);
+        doNothing().when(mockCiC).updateGithubCommitStatus(true, request.getHeadCommit().getId(), request.getRepository().getStatusesUrl());
+
+        mockMvc.perform(post("/ci"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void handleGithubWebhookCorrectlyHandlesGetRequest() throws Exception {
         // the function expects a POST requests sent to "/ci", not GET requests
         mockMvc.perform(get("/ci"))
                 .andExpect(status().isMethodNotAllowed());

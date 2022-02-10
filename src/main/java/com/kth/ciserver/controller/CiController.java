@@ -101,7 +101,7 @@ public class CiController {
      * @return True if the second word in the second to last line of the standard output 
      * is "SUCCESSFUL" (indicating a successful test run), else false.
      */
-    private Boolean executeAndPrintCommand(String cmd) throws IOException {
+    Boolean executeAndPrintCommand(String cmd) throws IOException {
         ArrayList<String> lines = new ArrayList<>();
         Runtime run = Runtime.getRuntime();
         Process process = run.exec(cmd);
@@ -111,7 +111,7 @@ public class CiController {
             System.out.println(line);
             lines.add(line);
         }
-    
+
         if (lines.size() < 2 || lines.get(lines.size()-2).split(" ").length < 2) 
             return false;
         return lines.get(lines.size()-2).split(" ")[1].equals("SUCCESSFUL");
