@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +32,9 @@ public class CiController {
   
     public static final String COMMIT_STATE_SUCCESS = "success";
     public static final String COMMIT_STATE_FAILURE = "failure";
+    public static final String BUILD_HISTORY_FILE_PATH = "BuildHistory.html";
+
+    File buildHistory = new File(BUILD_HISTORY_FILE_PATH);
 
     @Value("${github.username}")
     private String GITHUB_USERNAME;
@@ -53,8 +58,9 @@ public class CiController {
      * @return String, "Welcome to our CI server!"
      */
     @GetMapping()
-    public String handleHomepage() {
-        return "Welcome to our CI server!";
+    public String handleHomepage() throws IOException {
+        Path fileName = Path.of(BUILD_HISTORY_FILE_PATH);
+        return Files.readString(fileName);
     }
 
     /**
@@ -69,7 +75,7 @@ public class CiController {
         System.out.println("Received post request!");
         System.out.println(request.toString());
         boolean buildSuccessful = pullAndBuildApplication(request);
-        writeToFile(buildSuccessful, request.toString());
+        writeToFile(buildSuccessful, request.toHtml(), buildHistory);
         updateGithubCommitStatus(buildSuccessful,
                 request.getHeadCommit().getId(),
                 request.getRepository().getStatusesUrl());
@@ -84,7 +90,7 @@ public class CiController {
      * @return True if the Gradle build is successful, otherwise false
      * @throws IOException
      */
-    private boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
+    boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
         boolean testsSuccessful;
@@ -105,14 +111,14 @@ public class CiController {
      * @param success True if the test was successful, otherwise false
      * @param requestString Strings of GitHub webhook request
      */
-    private void writeToFile(boolean success, String requestString){
+    public void writeToFile(boolean success, String requestString, File file){
         try {
-            FileWriter writer = new FileWriter("BuildHistory.txt", true);
+            FileWriter writer = new FileWriter(file, true);
             writer.write(requestString);
             if (success)
-                writer.write("TESTS SUCCESSFUL\n");
+                writer.write("<h3 style='color:green'> TESTS SUCCESSFUL </h3> <br>");
             else
-                writer.write("TESTS FAILED\n");
+                writer.write("<h3 style='color:red'> TESTS FAILED </h3> <br>");
             writer.close();
         }
         catch (IOException e) {
@@ -127,7 +133,7 @@ public class CiController {
      * @param commitId
      * @param statusesUrl Url for the commit
      */
-    private void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
+    void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
         String commitState;
 
         if (testsSuccessful)
@@ -148,7 +154,7 @@ public class CiController {
      * @param commitState
      * @return The HTTP status code of the response.
      */
-    private HttpStatus postRequest(String url, String commitState) {
+    HttpStatus postRequest(String url, String commitState) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -185,7 +191,7 @@ public class CiController {
             System.out.println(line);
             lines.add(line);
         }
-    
+
         if (lines.size() < 2 || lines.get(lines.size()-2).split(" ").length < 2) 
             return false;
         return lines.get(lines.size()-2).split(" ")[1].equals("SUCCESSFUL");
