@@ -48,13 +48,14 @@ public class CiController {
     }
 
     /**
-     * Shows welcome message on the homepage.
+     * Shows build history on homepage
      *
-     * @return String, "Welcome to our CI server!"
+     * @return Strings of build history
      */
     @GetMapping()
-    public String handleHomepage() {
-        return "Welcome to our CI server!";
+    public String handleHomepage() throws IOException {
+        Path fileName = Path.of(BUILD_HISTORY_FILE_PATH);
+        return Files.readString(fileName);
     }
 
     /**
