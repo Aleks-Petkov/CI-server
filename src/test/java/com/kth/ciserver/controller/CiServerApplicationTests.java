@@ -142,7 +142,7 @@ class CiServerApplicationTests {
         Path fileName = Path.of("testFile.txt");
         String testString = "This is a test ";
         ciController.writeToFile(true, testString, testFile);
-        assertTrue (Files.readString(fileName).contains( "TESTS SUCCESSFUL"));
+        assertFalse (Files.readString(fileName).contains( "TESTS SUCCESSFUL"));
         PrintWriter printWriter = new PrintWriter("testFile.txt");
         printWriter.close();
     }
