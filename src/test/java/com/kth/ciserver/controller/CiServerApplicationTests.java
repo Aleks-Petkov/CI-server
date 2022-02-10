@@ -15,7 +15,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -130,5 +133,27 @@ class CiServerApplicationTests {
         req.setHeadCommit(hc);
         req.setRepository(ro);
         return req;
+    }
+
+    @Test
+    void writeToFileTestSuccessfull() throws IOException{
+        File testFile = new File("testFile.txt");
+        Path fileName = Path.of("testFile.txt");
+        String testString = "This is a test ";
+        CiController.writeToFile(true, testString, testFile);
+        assertTrue (Files.readString(fileName).contains( "TESTS SUCCESSFUL"));
+        PrintWriter printWriter = new PrintWriter("testFile.txt");
+        printWriter.close();
+    }
+
+    @Test
+    void writeToFileTest_Fail() throws IOException{
+        File testFile = new File("testFile.txt");
+        Path fileName = Path.of("testFile.txt");
+        String testString = "This is a test ";
+        CiController.writeToFile(false, testString, testFile);
+        assertTrue (Files.readString(fileName).contains("TESTS FAILED"));
+        PrintWriter printWriter = new PrintWriter("testFile.txt");
+        printWriter.close();
     }
 }

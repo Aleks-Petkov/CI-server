@@ -85,7 +85,7 @@ public class CiController {
         } 
     }
 
-    private void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
+    void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
         String commitState;
 
         if (testsSuccessful)
