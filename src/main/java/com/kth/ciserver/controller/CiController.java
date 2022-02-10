@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,9 +18,12 @@ import java.util.Map;
 
 @RestController
 public class CiController {
-
+  
     public static final String COMMIT_STATE_SUCCESS = "success";
     public static final String COMMIT_STATE_FAILURE = "failure";
+    public static final String BUILD_HISTORY_FILE_PATH = "BuildHistory.html";
+
+    File buildHistory = new File(BUILD_HISTORY_FILE_PATH);
 
     @Value("${github.username}")
     private String GITHUB_USERNAME;
@@ -35,34 +38,54 @@ public class CiController {
     }
 
     @GetMapping()
-    public String handleHomepage() {
-        return "Welcome to our CI server!";
+    public String handleHomepage() throws IOException {
+        Path fileName = Path.of(BUILD_HISTORY_FILE_PATH);
+        return Files.readString(fileName);
     }
 
     @PostMapping("/ci")
     public String handleGithubWebhook(@RequestBody GithubWebhookRequest request) throws IOException {
         System.out.println("Received post request!");
-        request.printRequest();
-
+        System.out.println(request.toString());
         boolean buildSuccessful = pullAndBuildApplication(request);
-
+        writeToFile(buildSuccessful, request.toHtml(), buildHistory);
         updateGithubCommitStatus(buildSuccessful,
                 request.getHeadCommit().getId(),
                 request.getRepository().getStatusesUrl());
-
         return "Ok!";
     }
 
     boolean pullAndBuildApplication(GithubWebhookRequest request) throws IOException {
         executeAndPrintCommand("git pull");
         executeAndPrintCommand(String.format("git checkout %s", request.getHeadCommit().getId()));
-        Boolean testsSuccessful = executeAndPrintCommand("./gradlew clean build");
+        boolean testsSuccessful;
+        try {
+            testsSuccessful = executeAndPrintCommand("./gradlew clean build");
+        }
+        catch(IOException e){
+            testsSuccessful = executeAndPrintCommand("gradlew.bat clean build");
+        }
         executeAndPrintCommand("git checkout main");
-        System.out.println("Tests successful: " + testsSuccessful); // this should instead be printed to file for consistent storage
+        System.out.println("Tests successful: " + testsSuccessful); 
         return testsSuccessful;
     }
 
-    void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
+    public static void writeToFile(boolean success, String requestString, File file){
+        try {
+            FileWriter writer = new FileWriter(file, true);
+            writer.write(requestString);
+            if (success)
+                writer.write("<h3 style='color:green'> TESTS SUCCESSFUL </h3> <br>");
+            else
+                writer.write("<h3 style='color:red'> TESTS FAILED </h3> <br>");
+            writer.close();
+        }
+        catch (IOException e) {
+            System.out.println(e.getMessage());
+        } 
+    }
+
+    private void updateGithubCommitStatus(boolean testsSuccessful, String commitId, String statusesUrl) {
         String commitState;
 
         if (testsSuccessful)
@@ -101,7 +124,7 @@ public class CiController {
      * @return True if the second word in the second to last line of the standard output 
      * is "SUCCESSFUL" (indicating a successful test run), else false.
      */
-    Boolean executeAndPrintCommand(String cmd) throws IOException {
+    private boolean executeAndPrintCommand(String cmd) throws IOException {
         ArrayList<String> lines = new ArrayList<>();
         Runtime run = Runtime.getRuntime();
         Process process = run.exec(cmd);
