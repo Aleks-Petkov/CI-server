@@ -70,7 +70,7 @@ public class CiController {
         return testsSuccessful;
     }
 
-    public static void writeToFile(boolean success, String requestString, File file){
+    public void writeToFile(boolean success, String requestString, File file){
         try {
             FileWriter writer = new FileWriter(file, true);
             writer.write(requestString);

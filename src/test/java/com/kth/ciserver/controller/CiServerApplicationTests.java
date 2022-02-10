@@ -52,6 +52,7 @@ class CiServerApplicationTests {
         GithubWebhookRequest request = createTestRequest();
 
         Mockito.doReturn(true).when(ciControllerNew).pullAndBuildApplication(request);
+        Mockito.doNothing().when(ciControllerNew).writeToFile(true, request.toHtml(), ciControllerNew.buildHistory);
         Mockito.doNothing().when(ciControllerNew).updateGithubCommitStatus(true, request.getHeadCommit().getId(), request.getRepository().getStatusesUrl());
 
         String output = ciControllerNew.handleGithubWebhook(request);
@@ -140,7 +141,7 @@ class CiServerApplicationTests {
         File testFile = new File("testFile.txt");
         Path fileName = Path.of("testFile.txt");
         String testString = "This is a test ";
-        CiController.writeToFile(true, testString, testFile);
+        ciController.writeToFile(true, testString, testFile);
         assertTrue (Files.readString(fileName).contains( "TESTS SUCCESSFUL"));
         PrintWriter printWriter = new PrintWriter("testFile.txt");
         printWriter.close();
@@ -151,7 +152,7 @@ class CiServerApplicationTests {
         File testFile = new File("testFile.txt");
         Path fileName = Path.of("testFile.txt");
         String testString = "This is a test ";
-        CiController.writeToFile(false, testString, testFile);
+        ciController.writeToFile(false, testString, testFile);
         assertTrue (Files.readString(fileName).contains("TESTS FAILED"));
         PrintWriter printWriter = new PrintWriter("testFile.txt");
         printWriter.close();
