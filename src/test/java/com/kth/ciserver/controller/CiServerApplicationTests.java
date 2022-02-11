@@ -57,7 +57,7 @@ class CiServerApplicationTests {
 
         String output = ciControllerNew.handleGithubWebhook(request);
 
-        assertEquals("Ok!", output);
+        assertEquals("no!", output);
     }
 
     @Test
