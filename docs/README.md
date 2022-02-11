@@ -26,8 +26,6 @@
     - Wrote the building instructions in the README 
     - Output the build file to web page as HTML with Aleks
     
-Work in progress...
-
 ## Requirements
 
 - Java 17
@@ -48,3 +46,6 @@ You need to set basic auth varibles in order to supply Github with the status of
 ## How to test?
 
 `./gradlew test`
+
+## Using Ngrok and GitHub webhooks
+To make the server visible to the internet, install [ngrok](https://ngrok.com/) and run ```./ngrok http 8080``` when the server is running. This will yield a forwarding address such as ```http://d118-217-208-62-96.ngrok.io``` but the server will however not receive POST requests from GitHub unless the CI-server repository is configured with a webhook to the payload URL ```http://d118-217-208-62-96.ngrok.io/ci``` with the content type set to ```application/json```.
