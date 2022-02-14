@@ -69,7 +69,8 @@ To make the server visible to the internet, install [ngrok](https://ngrok.com/) 
     `./gradlew build`
 
     `./gradlew bootRun`
-*To make the server visible to the internet, install [ngrok](https://ngrok.com/) and run;
+
+* To make the server visible to the internet, install [ngrok](https://ngrok.com/) and run;
 
     `./ngrok http 8080`
 
